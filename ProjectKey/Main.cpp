@@ -25,8 +25,8 @@ void PlayKeySound();
 void PlayWinSound();
 int main()
 {
-       int Width = 30;
-       int Height = 15;
+       int Width = 0;
+       int Height = 0;
        char* LevelArray = LoadLevel("Level1.txt", Width, Height);
    
 
@@ -118,6 +118,8 @@ bool ConvertLevel(char* Level, int Width, int Height, int& PlayerX, int& PlayerY
 
                 PlayerX = X;
                 PlayerY = Y;
+                break;
+            case ' ':
                 break;
                 cout << "Invald character in level file" << Level[Index] << endl;
                 AnyWarnings = true;
