@@ -2,23 +2,38 @@
 #include <iostream>
 #include<Windows.h>
 #include <conio.h>
+
+
+#include "Level.h"
+#include "Enemy.h"
+#include "Key.h"
+#include "Door.h"
+#include "Goal.h"
+#include "Money.h"                                                                                          
+
 using namespace std;
 
-constexpr int OpenDoorcolor = 10;
-constexpr int CloseDoorcolor = 12;
-constexpr int Regularcolor = 7;
+constexpr int KArrowInput = 224;
+constexpr int KLeftArrow = 75;
+constexpr int KRightArrow = 77;
+constexpr int KUpArrow = 72;
+constexpr int KDownArrow = 80;
+constexpr int KEscapeKey = 27;
+
 
 Game::Game() :M_GameOver{ false }
 {
+    
 }
 
 Game::~Game()
-{
+{ 
 }
 
 bool Game::Load()
 {
 	return M_Level.Load("Level1.txt", M_Player.GetXPositionPointer(), M_Player.GetYPositionPointer());
+   
 }
 
 void Game::UnLoad()
@@ -43,102 +58,167 @@ bool Game::IsGameOver()
 
 bool Game::Update()
 {
-    char Input = (char)_getch();
+   char Input = _getch();
+    int ArrowInput = 0;
     int NewPlayerX = M_Player.GetXPosition();
     int NewPlayerY = M_Player.GetYPosition();
-    switch (Input)
+
+    if (Input == KArrowInput)
     {
-    case 'w':
-        NewPlayerY--;
-        break;
-    case's':
-        NewPlayerY++;
-        break;
-    case'a':
+        ArrowInput = _getch();
+    }
+
+    if ((Input == KArrowInput && ArrowInput == KLeftArrow) ||
+        (char)Input == 'A' || (char)Input == 'a')
+    {
         NewPlayerX--;
-        break;
-    case 'd':
+      
+    }
+    else if ((Input == KArrowInput && ArrowInput == KRightArrow) ||
+        (char)Input == 'D' || (char)Input == 'd')
+    {
         NewPlayerX++;
-        break;
-    default:
-        break;
+     
     }
-
-    if (M_Level.IsSpace(NewPlayerX,NewPlayerY))
+    else if ((Input == KArrowInput && ArrowInput == KUpArrow) ||
+        (char)Input == 'W' || (char)Input == 'w')
     {
-        M_Player.SetPosition(NewPlayerX, NewPlayerY);
-    }
-    else if (M_Level.IsKey( NewPlayerX,NewPlayerY))
-    {
-        M_Level.PickUpKey(NewPlayerX, NewPlayerY);
-        M_Player.PickUpKeyInLevel();
-        M_Player.SetPosition(NewPlayerX, NewPlayerY);   
+        NewPlayerY--;
        
-        
-       // PlayKeySound();
-
     }
-    else if (M_Level.IsDoor(NewPlayerX,NewPlayerY) && M_Player.HasKey())
+    else if ((Input == KArrowInput && ArrowInput == KDownArrow) ||
+        (char)Input == 'S' || (char)Input == 's')
     {
-        M_Level.OpenDoor(NewPlayerX, NewPlayerY);
-        M_Player.UseKey();
-        M_Player.SetPosition(NewPlayerX, NewPlayerY);   
-
-        
-       // PlayOpenSound();
+        NewPlayerY++;
     }
-    else if (M_Level.IsDoor(NewPlayerX, NewPlayerY) && !M_Player.HasKey())
+    else if (Input == KEscapeKey)
     {
-        //PlayCloseDoorSound();
-    }
-    else if (M_Level.IsGoal(NewPlayerX,NewPlayerY))
-    {
-        
-        M_Player.SetPosition(NewPlayerX, NewPlayerY);   
-        
+        M_UserQuit = true;
         return true;
     }
-   
-	return false;
+    else if ((char)Input == 'Z' || (char)Input == 'z')
+    {
+        M_Player.DropKey();
+    }
+
+    if (NewPlayerX == M_Player.GetXPosition() && NewPlayerY == M_Player.GetYPosition())
+    {
+        return false;
+    }
+    else
+    {
+    
+        return HandleCollison(NewPlayerX, NewPlayerY);
+    }
+
 }
 
-void Game::Draw()
+
+
+bool Game::HandleCollison(int NewPlayerX, int NewPlayerY)
 {
-    system("cls");
-    for (int y = 0; y < M_Level.GetHeight(); y++)
+    PlaceableActor* CollidedActor = M_Level.UpdateActors(NewPlayerX, NewPlayerY);
+
+    if (CollidedActor != nullptr && CollidedActor->IsActive())
     {
-        for (int x = 0; x < M_Level.GetWidth(); x++)
+        Enemy* CollidedEnemy = dynamic_cast<Enemy*>(CollidedActor);
+        if (CollidedEnemy)
         {
-            if (M_Player.GetXPosition() == x && M_Player.GetYPosition() == y)
+            CollidedEnemy->Remove();
+            M_Player.DecrementLives();
+            M_Player.SetPosition(NewPlayerX, NewPlayerY);
+            if (M_Player.GetLives() < 0)
             {
-                M_Player.Draw();
+                return true;
             }
-            else
+        }
+
+        Money* CollidedMoney = dynamic_cast<Money*>(CollidedActor);
+        if (CollidedMoney)
+        {
+            CollidedMoney->Remove();
+            M_Player.AddMoney(CollidedMoney->GetWorth());
+            M_Player.SetPosition(NewPlayerX, NewPlayerY);
+        }
+
+        Key* CollidedKey = dynamic_cast<Key*>(CollidedActor);
+        if (CollidedKey)
+        {
+            if (!M_Player.HasKey())
             {
+                M_Player.PickUpKeyInLevel(CollidedKey);
+                CollidedKey->Remove();
+                M_Player.SetPosition(NewPlayerX, NewPlayerY);
+                // PlayKeySound
+            }
+        }
 
-                
-                HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (M_Level.IsDoor(x,y))
+        Door* CollidedDoor = dynamic_cast<Door*>(CollidedActor);
+        if (CollidedDoor)
+        {
+            if (!CollidedDoor->IsDoorOpen())
+            {
+                if (M_Player.HasKey(CollidedDoor->GetColor()))
                 {
-                    if (M_Player.HasKey())  
-                    {
-                        SetConsoleTextAttribute(Console, OpenDoorcolor);
-                    }
-                    else
-                    {
-
-                        SetConsoleTextAttribute(Console, CloseDoorcolor);
-                    }
+                    CollidedDoor->Open();
+                    CollidedDoor->Remove();
+                    M_Player.UseKey();
+                    M_Player.SetPosition(NewPlayerX, NewPlayerY);
+                    // PlayDoorSound
                 }
                 else
                 {
-                    SetConsoleTextAttribute(Console, Regularcolor);
-
+                    // CloseDoorSound
+                    return false;
                 }
-                M_Level.Draw(x, y);
             }
         }
-        cout << endl;
+
+        Goal* CollidedGoal = dynamic_cast<Goal*>(CollidedActor);
+        if (CollidedGoal)
+        {
+            CollidedGoal->Remove();
+            M_Player.SetPosition(NewPlayerX, NewPlayerY);
+            return true;
+        }
     }
+
+    if (M_Level.IsSpace(NewPlayerX, NewPlayerY) ||
+        (CollidedActor != nullptr && dynamic_cast<Door*>(CollidedActor) && dynamic_cast<Door*>(CollidedActor)->IsDoorOpen()))
+    {
+        M_Player.SetPosition(NewPlayerX, NewPlayerY);
+    }
+    else if(M_Level.IsWall(NewPlayerY,NewPlayerY))
+    {
+
+    }
+    return false;
+}
+
+
+
+
+void Game::Draw()
+{
+   
+    HANDLE  Console = GetStdHandle(STD_OUTPUT_HANDLE);
+    system("cls");
+    M_Level.Draw();     
+ 
+    COORD ActorCursorPosition;
+    ActorCursorPosition.X = M_Player.GetXPosition();
+    ActorCursorPosition.Y = M_Player.GetYPosition();
+    SetConsoleCursorPosition(Console, ActorCursorPosition);
+
+    M_Player.Draw();
+    COORD CurrentCursorPosition;
+    CurrentCursorPosition.X = 0;
+    CurrentCursorPosition.Y = M_Level.GetHeight();
+    SetConsoleCursorPosition(Console, CurrentCursorPosition);
+    
+    
+
+       
+    
 }
 
