@@ -218,7 +218,7 @@ PlaceableActor* Level::UpdateActors(int X, int Y)
     for (auto Actor = M_pActors.begin(); Actor!=M_pActors.end(); ++Actor )
     {
         (*Actor)->Update();
-        if (X ==(*Actor)->GetXPosition()&& Y==(*Actor)->GetXPosition())
+        if (X ==(*Actor)->GetXPosition() && Y== (*Actor)->GetYPosition())
         {
             assert(CollidedActors == nullptr);
             CollidedActors = (*Actor);
