@@ -69,7 +69,7 @@ bool Level::Load(std::string LevelName, int* PlayerX, int* PlayerY)
 void Level::Draw()
 {
     HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(Console, KRegulerColor);
+    SetConsoleTextAttribute(Console, (int)ActorColor::KRegulerColor);
 
     for (int Y = 0; Y < GetHeight(); Y++)
     {
@@ -99,7 +99,7 @@ void Level::Draw()
 bool Level::IsSpace(int X, int Y)
 {
 
-	return M_pLevelData[GetIndexFromCoordinates(X,Y)] ==     ' ';
+	return M_pLevelData[GetIndexFromCoordinates(X,Y)] ==   ' ';
 }
 
 bool Level::IsWall(int X, int Y)
@@ -127,34 +127,34 @@ bool Level::ConvertLevel(int* PlayerX, int* PlayerY)
 
             case 'r':
                 M_pLevelData[Index] = ' ';
-                M_pActors.push_back(new Key(X, Y, KRedColor));
+                M_pActors.push_back(new Key(X, Y,ActorColor:: KRedColor));
                
                 break;
 
             case 'g':
                 M_pLevelData[Index] = ' ';
-                M_pActors.push_back(new Key(X, Y, KGreenColor));
+                M_pActors.push_back(new Key(X, Y,ActorColor:: KGreenColor));
                 break;
 
             case 'b':
                 M_pLevelData[Index] = ' ';
-                M_pActors.push_back(new Key(X, Y, KColorBlue));
+                M_pActors.push_back(new Key(X, Y,ActorColor:: KColorBlue));
                 break;
 
 
             case 'R':
                 M_pLevelData[Index] = ' ';
-                M_pActors.push_back(new Door(X, Y, KRedColor, KRedColorSoild));
+                M_pActors.push_back(new Door(X, Y,ActorColor:: KRedColor,ActorColor:: KRedColorSoild));
                 break;
 
             case 'G':
                 M_pLevelData[Index] = ' ';
-                M_pActors.push_back(new Door(X, Y, KGreenColor, KGreenColorSolid));
+                M_pActors.push_back(new Door(X, Y,ActorColor:: KGreenColor,ActorColor:: KGreenColorSolid));
                 break;
 
             case 'B':
                 M_pLevelData[Index] = ' ';
-                M_pActors.push_back(new Door(X, Y, KColorBlue, KColorBlueSoild));
+                M_pActors.push_back(new Door(X, Y,ActorColor:: KColorBlue,ActorColor:: KColorBlueSoild));
                 break;
 
             case 'X':

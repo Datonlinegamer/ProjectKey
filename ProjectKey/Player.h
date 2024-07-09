@@ -9,7 +9,7 @@ public:
 
 
 bool HasKey();
-bool HasKey(int Color);
+bool HasKey(ActorColor);
 
 
 void AddMoney(int Money) { M_Money += Money; }

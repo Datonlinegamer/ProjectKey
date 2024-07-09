@@ -3,7 +3,7 @@
 class Key : public PlaceableActor
 {
 public:
-	Key(int X, int Y, int Color)
+	Key(int X, int Y, ActorColor Color)
 		:PlaceableActor(X,Y ,Color)
 	{
 
