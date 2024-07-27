@@ -11,10 +11,14 @@
 #include <cassert>
 #include "Level.h"
 
-using namespace std;
-constexpr char Wall = (char) 219;
 
-Level::Level() :M_pLevelData{nullptr},M_Width{0},M_Height{0}
+using namespace std;
+
+
+Level::Level() :
+     M_pLevelData(nullptr)
+    ,M_Width(0)
+    ,M_Height(0)
 {
 }
 
@@ -99,7 +103,7 @@ void Level::Draw()
 bool Level::IsSpace(int X, int Y)
 {
 
-	return M_pLevelData[GetIndexFromCoordinates(X,Y)] ==   ' ';
+    	return M_pLevelData[GetIndexFromCoordinates(X,Y)] ==   ' ';
 }
 
 bool Level::IsWall(int X, int Y)
@@ -218,7 +222,7 @@ PlaceableActor* Level::UpdateActors(int X, int Y)
     for (auto Actor = M_pActors.begin(); Actor!=M_pActors.end(); ++Actor )
     {
         (*Actor)->Update();
-        if (X ==(*Actor)->GetXPosition() && Y== (*Actor)->GetYPosition())
+        if (X ==(*Actor)->GetXPosition() && Y == (*Actor)->GetYPosition())
         {
             assert(CollidedActors == nullptr);
             CollidedActors = (*Actor);

@@ -1,7 +1,7 @@
 #include"PlaceableActor.h"
 
 PlaceableActor::PlaceableActor(int X, int Y, ActorColor Color) :
-	M_pPosition{ new Point(X,Y) }, M_isActive{ true }, M_Color{Color}
+	M_pPosition{ new Point(X,Y) }, M_isActive(true), M_Color(Color)
 {
 }
 
@@ -14,14 +14,14 @@ PlaceableActor::~PlaceableActor()
 int PlaceableActor::GetXPosition()
 {
 	return M_pPosition->X;
-	//SetPosition(M_pPosition->X, M_pPosition->Y);
+	
 
 }
 
 int PlaceableActor::GetYPosition()
 {
 	return M_pPosition->Y;
-	//SetPosition(M_pPosition->X, M_pPosition->Y);
+	
 }
 
 int* PlaceableActor::GetXPositionPointer()

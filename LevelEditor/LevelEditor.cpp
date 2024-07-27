@@ -1,20 +1,11 @@
 #include <iostream>
 #include <conio.h>
 #include <fstream>
+#include "LevelEdittor.h"
 using namespace std;
 
-void GetLevelDimension(int& Width, int& Height);
-void DisplayLevel(char* plevel, int width, int height, int CursorX, int CursorY);
-void DisplayTopBorder(int width);
-void DisplayBottomBorder(int width);
-void DisplayLeftBorder();
-void DisplayRightBorder();
-void SaveLevel(char* Plevel, int Width, int Height);
-void DisplayLegend();
-int GetIndexFromXY(int X, int Y, int Width);
-bool EditLevel(char* PLevel, int& CursorX, int& CursorY, int Height, int Width);
 
-
+LevelEditor level;
 constexpr int ArrowInput = 224;
 constexpr int LeftArrowInput = 75;
 constexpr int RightArrowInput = 77;
@@ -34,37 +25,98 @@ constexpr char KVerticalBorder = 186;
 
 int main()
 {
+    char* pLevel = nullptr;
     int LevelWidth;
     int LevelHeight;
-    GetLevelDimension(LevelWidth, LevelHeight);
-
-    char* PLevel = new char[LevelWidth * LevelHeight];
-
-    for (int i = 0; i < LevelWidth * LevelHeight; i++)
+    bool done = false;
+ 
+    while (!done)
     {
-        PLevel[i] = ' ';
+        system("cls");
+        std::cout << "Please one of the following options:" << std::endl;
+        std::cout << "1. Load Level" << std::endl;
+        std::cout << "2. New Level" << std::endl;
+        std::cout << "3. Quit" << std::endl;
+
+        int input;
+        std::cin >> input;
+        if (input == 1)
+        {
+            //Load level
+            std::cout << "Enter Level name";
+            string levelName;
+            std::cin >> levelName;
+            levelName.insert(0, "../");
+            ifstream levelfile;
+            levelfile.open(levelName);
+            if (!levelfile)
+            {
+                std::cout << "Opening file failed!" << std::endl;
+            }
+            else
+            {
+                constexpr int tempSize = 25;
+                char temp[tempSize];
+
+                levelfile.getline(temp, tempSize, '\n');
+                LevelWidth = atoi(temp);
+
+                levelfile.getline(temp, tempSize, '\n');
+                LevelHeight = atoi(temp);
+                pLevel = new char[LevelWidth * LevelHeight];
+                levelfile.read(pLevel, LevelWidth * LevelHeight);
+                levelfile.close();
+               level.RunEditor(pLevel, LevelWidth, LevelHeight);
+
+                delete[] pLevel;
+                pLevel = nullptr;
+            }
+        }
+        else if (input == 2)
+        {
+            //New level
+            level.GetLevelDimension(LevelWidth, LevelHeight);
+            pLevel = new char[LevelWidth * LevelHeight];
+
+            for (int i = 0; i < LevelWidth * LevelHeight; i++)
+            {
+                pLevel[i] = ' ';
+            }
+            level.RunEditor(pLevel, LevelWidth, LevelHeight);
+
+            delete[] pLevel;
+            pLevel = nullptr;
+        }
+        else
+        {
+            done = true;
+        }
     }
+}
+
+ void LevelEditor:: RunEditor(char* PLevel, int width, int height)
+{
+
 
     int CursorX = 0;
     int CursorY = 0;
-    bool DoneEditing = false;
-    while (!DoneEditing)
+    bool doneEditing = false;
+    while (!doneEditing)
     {
         system("cls");
-        DisplayLevel(PLevel, LevelWidth, LevelHeight, CursorX, CursorY);
-        DisplayLegend();
-        DoneEditing = EditLevel(PLevel, CursorX, CursorY, LevelHeight, LevelWidth);
+      level.DisplayLevel(PLevel, width, height, CursorX, CursorY);
+        level.DisplayLegend();
+        doneEditing = level.EditLevel(PLevel, CursorX, CursorY, height, width);
     }
-    SaveLevel(PLevel, LevelWidth, LevelHeight);
+   level.SaveLevel(PLevel, width, height);
     system("cls");
-    DisplayLevel(PLevel, LevelWidth, LevelHeight, -1, -1);
-    delete[] PLevel;
-    PLevel = nullptr;
-    return 0;
+   level. DisplayLevel(PLevel, width, height, -1, -1);
+   
+   
 }
 
 
-void DisplayLegend()
+void LevelEditor::DisplayLegend()
 {
     cout << "Arrow to move cursor" << endl;
     cout << "ESC to finish editing" << endl;
@@ -82,7 +134,7 @@ void DisplayLegend()
 }
 
 
-void SaveLevel(char* Plevel, int Width, int Height)
+void LevelEditor:: SaveLevel(char* Plevel, int Width, int Height)
 {
     cout << "Pick a name for your level file (eg: Level1.txt):";
     string LevelName;
@@ -108,7 +160,7 @@ void SaveLevel(char* Plevel, int Width, int Height)
     }
 }
 
-bool EditLevel(char* PLevel, int& CursorX, int& CursorY, int Height, int Width)
+bool LevelEditor:: EditLevel(char* PLevel, int& CursorX, int& CursorY, int Height, int Width)
 {
     int NewCursorX = CursorX;
     int NewCursorY = CursorY;
@@ -175,7 +227,7 @@ bool EditLevel(char* PLevel, int& CursorX, int& CursorY, int Height, int Width)
     return false;
 }
 
-void GetLevelDimension(int& Width, int& Height)
+void LevelEditor::GetLevelDimension(int& Width, int& Height)
 {
     cout << "Enter the width of your level: ";
     cin >> Width;
@@ -183,12 +235,13 @@ void GetLevelDimension(int& Width, int& Height)
     cin >> Height;
 }
 
-void DisplayLevel(char* plevel, int Width, int Height, int CursorX, int CursorY)
+ void LevelEditor::DisplayLevel(char* plevel, int Width, int Height, int CursorX, int CursorY)
 {
-    DisplayTopBorder(Width);
+   level.DisplayTopBorder(Width);
     for (int Y = 0; Y < Height; Y++)
     {
-        DisplayLeftBorder();
+        level.DisplayLeftBorder();
+      
         for (int X = 0; X < Width; X++)
         {
             if (CursorX == X && CursorY == Y)
@@ -197,21 +250,21 @@ void DisplayLevel(char* plevel, int Width, int Height, int CursorX, int CursorY)
             }
             else
             {
-                int Index = GetIndexFromXY(X, Y, Width);
+                int Index = level.GetIndexFromXY(X, Y, Width);
                 cout << plevel[Index];
             }
         }
-        DisplayRightBorder();
+        level.DisplayRightBorder();
     }
-    DisplayBottomBorder(Width);
+   level. DisplayBottomBorder(Width);
 }
 
-int GetIndexFromXY(int X, int Y, int Width)
+int LevelEditor:: GetIndexFromXY(int X, int Y, int Width)
 {
     return X + Y * Width;
 }
 
-void DisplayTopBorder(int width)
+void LevelEditor:: DisplayTopBorder(int width)
 {
     cout << KTopLeftBorder;
     for (int i = 0; i < width; i++)
@@ -221,7 +274,7 @@ void DisplayTopBorder(int width)
     cout << KTopRightBorder << endl;
 }
 
-void DisplayBottomBorder(int width)
+ void LevelEditor::DisplayBottomBorder(int width)
 {
     cout << KBottomLeftBorder;
     for (int i = 0; i < width; i++)
@@ -231,12 +284,12 @@ void DisplayBottomBorder(int width)
     cout << KBottomRightBorder << endl;
 }
 
-void DisplayLeftBorder()
+void LevelEditor:: DisplayLeftBorder()
 {
     cout << KVerticalBorder;
 }
 
-void DisplayRightBorder()
+void LevelEditor:: DisplayRightBorder()
 {
     cout << KVerticalBorder << endl;
 }

@@ -9,7 +9,7 @@ public:
 	virtual void Draw()override;
 	virtual void Update()override;
 
-
+	virtual ActorType GetType() override { return ActorType::Enemy; }
 private:
 	int M_MovementInX;
 	int M_MovementInY;

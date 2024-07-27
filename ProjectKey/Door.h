@@ -7,7 +7,7 @@ public:
 	virtual void Draw() override;
 	bool IsDoorOpen() { return M_IsOpen; }
 	void Open() { M_IsOpen = true; }
-
+	virtual ActorType GetType() override { return ActorType::Door; }
 
 
 private:

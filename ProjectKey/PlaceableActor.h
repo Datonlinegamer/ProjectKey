@@ -40,6 +40,7 @@ public:
 
 	bool IsActive() { return M_isActive; }
 	void Place(int X, int Y);
+	virtual  ActorType GetType() = 0;
 	virtual void Draw() = 0;
 	virtual void Update()
 	{

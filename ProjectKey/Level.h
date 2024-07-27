@@ -17,6 +17,7 @@ public:
 	int	GetHeight() { return M_Height; }
 	int	GetWidth() { return M_Width; }
 	PlaceableActor* UpdateActors(int X, int Y);
+	static constexpr char Wall = (char)219;
 private:
 	bool ConvertLevel(int* PlayerX, int* PlayerY);
 	int GetIndexFromCoordinates(int X, int Y);

@@ -129,6 +129,9 @@
   <ItemGroup>
     <ClCompile Include="LevelEditor.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LevelEdittor.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
